@@ -16,7 +16,6 @@ const registerUser = asyncHandler(async (req, res) => {
   //return response
 
   const { fullname, email, username, password } = req.body;
-  console.log("email", email);
 
   if (
     [fullname, email, username, password].some((field) => field?.trim() === "")
@@ -24,7 +23,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new apiError(400, "All fields are required!");
   }
 
-  const existedUser = User.findOne({
+  const existedUser = await User.findOne({
     $or: [{ email }, { username }],
   });
 
@@ -32,8 +31,14 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new apiError(409, "User with email or username already exists.");
   }
 
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  // console.log(req);
+  // console.log(req.files);
+
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
+  const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+
+  // console.log(avatarLocalPath);
+  // console.log(coverImageLocalPath);
 
   if (!avatarLocalPath) {
     throw new apiError(400, "Avatar file is required.");
@@ -48,7 +53,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const user = await User.create({
     fullname,
-    avatar: avatar.url,
+    avatar: avatar?.url || "",
     coverImage: coverImage?.url || "",
     email,
     password,
@@ -59,7 +64,7 @@ const registerUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-  if (createdUser) {
+  if (!createdUser) {
     throw new apiError(500, "Something went wrong while registering the user.");
   }
 
