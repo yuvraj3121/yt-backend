@@ -409,6 +409,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     {
       $match: {
         _id: new mongoose.Types.ObjectId(req.user._id),
+        video: { $exists: true },
       },
     },
     {
@@ -438,7 +439,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
           {
             $addFields: {
               owner: {
-                $first: "owner",
+                $first: "$owner",
               },
             },
           },
